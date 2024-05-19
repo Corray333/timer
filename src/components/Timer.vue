@@ -6,7 +6,7 @@ import { ref } from 'vue'
 
 const store = useStore()
 
-const timeFull = -2000
+const timeFull = -1900
 const timeMin = 1000
 
 
@@ -48,7 +48,7 @@ const endSession = ()=>{
 <template>
     <section class="flex flex-col items-center gap-5">
         <div class="clock relative flex justify-center items-center w-fit">
-            <h3 class=" text-4xl font-bold absolute">{{ formatTime(store.state.minutes) }}:{{
+            <h3 class=" text-[3rem] font-bold absolute">{{ formatTime(store.state.minutes) }}:{{
                 formatTime(store.state.seconds) }}</h3>
             <svg class=" -rotate-90" width="320" height="320">
                 <circle class=" opacity-25" cx="160" cy="160" r="150" stroke-width="20" fill="transparent"
@@ -82,6 +82,6 @@ const endSession = ()=>{
 <style setup>
 .clock circle {
     stroke-dasharray: 1000;
-    transition: all 0.3s;
+    transition: all 1s linear;
 }
 </style>
