@@ -1,46 +1,85 @@
 <script setup>
-
-import { ref, computed } from 'vue'
+import { ref, nextTick, onBeforeMount, onBeforeUnmount } from 'vue'
 import { Icon } from '@iconify/vue'
-import Task from '../components/Task.vue'
 
-const tasks = ref([
-    {
-        task: 'Task task1',
-        isDone: false
-    },
-    {
-        task: 'Task task2',
-        isDone: false
-    },
-    {
-        task: 'Task task3',
-        isDone: false
-    },
-])
+const tasks = ref([])
 
-const newTask = ()=>{
-    tasks.value.push({
-        task: 'New task',
+onBeforeMount(()=>{
+    let saved = JSON.parse(localStorage.getItem('tasks'))
+    if (saved){
+        tasks.value = saved
+    }
+})
+
+const saveTasks = ()=>{
+    localStorage.setItem('tasks', JSON.stringify(tasks.value))
+}
+
+const newTask = (index) => {
+    tasks.value.splice(index+1, 0, {
+        task: '',
         isDone: false
+    })
+    saveTasks()
+    nextTick(() => {
+        const newTaskElement = document.querySelectorAll('[contenteditable]')[index + 1]
+        if (newTaskElement) {
+            newTaskElement.focus()
+        }
     })
 }
 
+const removeTask = (id)=>{
+    tasks.value.splice(id, 1)
+    saveTasks()
+}
 
+const focusedElement = ref(null)
 
+const handleInput = (task, event) => {
+    const inputText = event.target.innerText
+    if (inputText.length > 100) {
+        event.target.innerText = inputText.slice(0, 100)
+        task.task = inputText.slice(0, 100)
+    } else {
+        task.task = inputText
+    }
+    saveTasks()
+    nextTick(() => {
+        if (focusedElement.value) {
+            const range = document.createRange()
+            const sel = window.getSelection()
+            range.setStart(focusedElement.value.childNodes[0], focusedElement.value.innerText.length)
+            range.collapse(true)
+            sel.removeAllRanges()
+            sel.addRange(range)
+            focusedElement.value.focus()
+        }
+    })
+}
 
+const handleFocus = (event) => {
+    focusedElement.value = event.target
+}
+
+const handleBlur = () => {
+    focusedElement.value = null
+}
 
 </script>
 
 <template>
-    <section>
+    <section class="h-full">
         <h1 class="text-center flex items-center justify-center">Tasks 
-            <button class="text-xl" @click="newTask">
+            <button class="text-xl" @click="newTask(tasks.length-1)">
                 <Icon icon="mdi:plus" />
-            </button></h1>
-        <div class="flex flex-col gap-2">
-            <div  v-for="(task) of tasks" :key="task.task" :task="task" @done="task.isDone = !task.isDone" class="task flex items-center gap-2" :style="task.isDone ? 'opacity:0.5' : ''">
-                <div @click="task.isDone = !task.isDone"
+            </button>
+        </h1>
+        <p v-if="tasks.length==0" class="text-center text-sm opacity-50">No tasks yet, create the first one</p>
+        <div v-else class="flex flex-col gap-2">
+            <div v-for="(task, index) of tasks" :key="index" :task="task" @done="task.isDone = !task.isDone" class=" group pl-5 relative task flex  gap-2" :style="task.isDone ? 'opacity:0.5' : ''">
+                <button @click="removeTask(index)"><Icon icon="mdi:trash-can" class=" absolute left-0 top-0 text-xl duration-300 hover:text-red-400 scale-0 group-hover:scale-100" /></button>
+                <div @click="task.isDone = !task.isDone; saveTasks()"
                     class=" cursor-pointer w-6 h-6 flex justify-center items-center border-2 border-white rounded-md">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="10" viewBox="0 0 12 10" fill="none">
                         <path :style="task.isDone ? 'stroke-dashoffset: -40;' : 'stroke-dashoffset: -20;'"
@@ -49,29 +88,33 @@ const newTask = ()=>{
                     </svg>
                 </div>
                 <p :class="task.isDone ? 'done' : ''" class="w-fit relative flex items-center">
-                    <span role="textbox" contenteditable class="relative flex items-center w-fit" @input="task.task = $event.target.innerText" v-text="task.task"></span>
+                    <span role="textbox" contenteditable class="relative flex items-center w-fit"
+                        @keydown.enter="newTask(index)"
+                        spellcheck="false"
+                          @input="handleInput(task, $event)"
+                          @focus="handleFocus"
+                          @blur="handleBlur"
+                          v-text="task.task"></span>
                 </p>
             </div>
         </div>
     </section>
 </template>
 
-
 <style scoped>
-
-input{
+input {
     background: transparent;
     color: dark;
     font-family: 'Montserrat', sans-serif;
     font-weight: normal;
 }
 
-path{
+path {
     stroke-dasharray: 20;
     transition: all 0.3s;
 }
 
-p::after{
+p::after {
     content: '';
     position: absolute;
     height: 2px;
@@ -79,10 +122,12 @@ p::after{
     background-color: white;
     transition: all 0.3s;
 }
-.done{
+
+.done {
     opacity: 0.5;
 }
-.done::after{
+
+.done::after {
     width: 100%;
 }
 </style>

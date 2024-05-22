@@ -64,14 +64,17 @@ const endSession = ()=>{
             <p>Cycles: {{ store.state.cycle }}/{{ store.state.numberOfCycles }}</p>
         </div>
         <section class="flex gap-2">
-            <button @click="endSession" class="button-control">
+            <button @click="endSession" class="button-control group relative">
                 <Icon icon="ph:stop-bold" />
+                <div class="tip duration-300 scale-0 group-hover:scale-100  text-white bg-dark py-2 px-4 text-lg  rounded-md origin-top absolute top-full mt-4 flex justify-center"> <span class="bg-dark w-4 h-4 rotate-45 absolute -top-2"></span>End</div>
             </button>
-            <button @click="startTimer" class="button-control">
+            <button @click="startTimer" class="button-control group relative">
                 <Icon :icon="interval ? 'ph:pause-bold' : 'ph:play-bold'" />
+                <div class="tip duration-300 scale-0 group-hover:scale-100  text-white bg-dark py-2 px-4 text-lg  rounded-md origin-top absolute top-full mt-4 flex justify-center"> <span class="bg-dark w-4 h-4 rotate-45 absolute -top-2"></span>Pause</div>
             </button>
-            <button @click="nextPhaze" class="button-control">
+            <button @click="nextPhaze" class="button-control group relative">
                 <Icon icon="ph:arrow-fat-line-right-bold" />
+                <div class="tip duration-300 scale-0 group-hover:scale-100 text-white bg-dark py-2 px-4 text-lg  rounded-md origin-top absolute top-full mt-4 flex justify-center"> <span class="bg-dark w-4 h-4 rotate-45 absolute -top-2"></span>Next</div>
             </button>
         </section>
     </section>

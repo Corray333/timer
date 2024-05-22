@@ -16,9 +16,18 @@
   outline: none;
 }
 
+#app{
+  display: flex;
+  width: 100%;
+}
+
 h1,h2,h3, input{
   font-family: 'Barlow Semi Condensed', sans-serif;
   font-weight: bold;
+}
+
+input{
+  font-weight: normal;
 }
 
 h1{

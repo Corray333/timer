@@ -6,7 +6,44 @@ import { useStore } from 'vuex'
 
 const store = useStore()
 
-const audio = ref()
+const audioURL = ref('')
+
+const player = ref('')
+
+function convertSpotifyToEmbedLink(baseLink) {
+  const parts = baseLink.split('.com/');
+
+  const embedLink = parts[0] + '.com/embed/' + parts[1];
+  console.log(parts)
+
+  return embedLink;
+}
+
+function convertYandexToEmbedLink(baseLink) {
+    const userIdAndPlaylistId = baseLink.match(/users\/(.+?)\/playlists\/(\d+)/);
+
+  if (!userIdAndPlaylistId || userIdAndPlaylistId.length!== 3) {
+    throw new Error("Invalid base link format.");
+  }
+
+  const userId = userIdAndPlaylistId[1];
+  const playlistId = userIdAndPlaylistId[2];
+
+  // Формируем ссылку для встраивания
+  const embedLink = `https://music.yandex.ru/iframe/playlist/${userId}/${playlistId}`;
+
+  return embedLink;
+}
+
+
+const createPlayer = ()=>{
+    localStorage.setItem('musicURL', audioURL.value)
+    if (audioURL.value.includes('spotify')){
+        player.value = `<iframe class="rounded-xl" style="border-radius:12px" src="${convertSpotifyToEmbedLink(audioURL.value)}?utm_source=generator" width="100%" height="100%" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`
+    } else if (audioURL.value.includes('yandex')){
+        player.value = `<iframe class="rounded-xl" frameborder="0" style="border:none;width:100%;height:100%;" width="100%" height="100%" src="${convertYandexToEmbedLink(audioURL.value)}"></iframe>`
+    }
+}
 
 
 const sounds = ref([
@@ -48,6 +85,10 @@ const sounds = ref([
 ])
 
 onBeforeMount(()=>{
+
+    let url = localStorage.getItem('musicURL')
+    if (url && url != 'null') audioURL.value = url
+    createPlayer()
     for (let i = 0; i<sounds.value.length; i++){
         if (store.state.activeSounds.get(sounds.value[i].sound) && !store.state.activeSounds.get(sounds.value[i].sound).paused){
             sounds.value[i].isActive = true
@@ -59,7 +100,7 @@ onBeforeMount(()=>{
 </script>
 
 <template>
-    <section class="flex flex-col gap-5">
+    <section class="flex flex-col gap-5 overflow-y-scroll">
         <h1 class="text-center">Sounds</h1>
         <div class="sound-buttons grid">
             <button v-for="(sound, i) of sounds" :key="i"
@@ -76,11 +117,25 @@ onBeforeMount(()=>{
                 </div>
             </button>
         </div>
+        <div class="music flex flex-col items-center h-full">
+            <h1>Music</h1>
+            <span class="flex gap-2 mb-5 min-w-64">
+                <input v-model="audioURL" type="text" class=" bg-transparent border-b-2 border-white w-full" placeholder="Yandex or spotify playlist URL">
+                <button @click="createPlayer" class="text-2xl"><Icon icon="ci:save" /></button>
+            </span>
+            <span v-if="player.length>0" v-html="player" class="w-full h-full min-h-96"></span>
+        </div>
     </section>
 </template>
 
 
 <style scoped>
+
+section{
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
 .sound-buttons {
     display: grid;
     gap: 1rem;
