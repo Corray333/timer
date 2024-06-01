@@ -110,7 +110,7 @@ onBeforeMount(()=>{
                 <Icon @click.self="store.commit('toggleSound', sound.sound); sound.isActive = !sound.isActive"
                     :icon="sound.icon" />
                 <div
-                    class="soundrange absolute top-full flex p-4 box-border bg-dark z-10 rounded-xl drop-shadow-md shadow-white scale-0 duration-200 group-hover:scale-100">
+                    class="soundrange absolute top-full flex p-4 bg-dark z-10 rounded-xl drop-shadow-2xl scale-0 duration-200 group-hover:scale-100">
                     <input type="range"
                         @input="store.commit('setVolume', { sound: sound.sound, volume: $event.target.value })" min="0"
                         max="1" step="0.01" class="w-full">
